@@ -9,6 +9,7 @@
 </template>
 
 <script setup>
+// yeet
 import { ref } from 'vue'
 import bgImage from '@/assets/journal-cover.jpg'
 
