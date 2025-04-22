@@ -13,17 +13,31 @@ See [Vite Configuration Reference](https://vite.dev/config/).
 ## Project Setup
 
 ```sh
+cd Frontend
+npm install
+cd ../Backend
 npm install
 ```
 
-### Compile and Hot-Reload for Development
+### Install and Start MongoDB
+
+[MongoDB Installation Docs](https://www.mongodb.com/docs/manual/installation/)
+
+### Compile and Hot-Reload Frontend for Development
 
 ```sh
+cd Frontend
 npm run dev
 ```
+
+### Run Backend Development Server (in separate shell)
+
+````sh
+cd Backend
+node server.js
 
 ### Compile and Minify for Production
 
 ```sh
 npm run build
-```
+````
