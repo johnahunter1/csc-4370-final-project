@@ -1,12 +1,12 @@
 # csc-4370-final-project
 
-This template should help get you started developing with Vue 3 in Vite.
+## Interactive Journal
 
-## Recommended IDE Setup
+### Recommended IDE Setup
 
 [VSCode](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
 
-## Customize configuration
+### Customize Vite Configuration
 
 See [Vite Configuration Reference](https://vite.dev/config/).
 
@@ -30,14 +30,15 @@ cd Frontend
 npm run dev
 ```
 
-### Run Backend Development Server (in separate shell)
+### Run Backend Development Server (In Separate Shell)
 
-````sh
+```sh
 cd Backend
 node server.js
+```
 
 ### Compile and Minify for Production
 
 ```sh
 npm run build
-````
+```
