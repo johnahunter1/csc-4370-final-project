@@ -1,28 +1,47 @@
 <template>
-  <div id="app" class="background-cover" :style="{ backgroundImage: `url(${bgImage})` }">
+  <div
+    id="app"
+    class="background-cover"
+    :style="{ backgroundImage: `url(${bgImage})` }"
+  >
     <!-- Welcome Page -->
     <div class="welcome-box" v-if="!showJournal">
-      <input v-model="name" type="text" placeholder="Enter your name" class="input-box" />
-      <button class="welcome-button" @click="showWelcome = true">Welcome</button>
+      <input
+        v-model="name"
+        type="text"
+        placeholder="Enter your name"
+        class="input-box"
+      />
+      <button class="welcome-button" @click="showWelcome = true">
+        Welcome
+      </button>
       <p v-if="showWelcome" class="greeting">Welcome, {{ name }}!</p>
-      <button class="welcome-button" @click="showJournal = true">Open Journal</button>
+      <button class="welcome-button" @click="showJournal = true">
+        Open Journal
+      </button>
       <button class="back-button" @click="resetName">← Reset Name</button>
     </div>
 
     <!-- Journal Page -->
     <div class="journal-image" v-else>
-      <img :src="looseLeafImage" alt="Loose Leaf Journal" class="looseleaf-img" />
+      <img
+        :src="looseLeafImage"
+        alt="Loose Leaf Journal"
+        class="looseleaf-img"
+      />
 
       <!-- Mood and Category Selectors -->
       <div v-if="showTextBox && !entryStarted" class="selector-box">
         <h3>How are you feeling?</h3>
         <select v-model="selectedMood" class="dropdown">
-          <option disabled value="">Select Mood</option>
-          <option>😊 Happy</option>
-          <option>😢 Sad</option>
-          <option>😡 Angry</option>
-          <option>😴 Tired</option>
-          <option>🤯 Stressed</option>
+          <option disabled value="">Select a mood</option>
+          <option
+            v-for="option in moodOptions"
+            :key="option.value"
+            :value="option.value"
+          >
+            {{ option.label }}
+          </option>
         </select>
 
         <h3>Choose a category:</h3>
@@ -36,11 +55,19 @@
           <option>Goals</option>
         </select>
 
-        <button class="start-entry-button" @click="startEntry">Start Writing</button>
+        <button class="start-entry-button" @click="startEntry">
+          Start Writing
+        </button>
       </div>
 
       <!-- Journal Textbox -->
       <div v-else-if="entryStarted" class="entry-box">
+        <input
+          v-model="newTitle"
+          type="text"
+          placeholder="Entry Title"
+          class="entry-input"
+        />
         <textarea
           v-model="journalEntry"
           placeholder="Start writing your journal entry here..."
@@ -49,76 +76,132 @@
         <button class="save-entry-button" @click="saveEntry">Save Entry</button>
       </div>
 
-      <button v-if="!showTextBox" class="new-entry-button" @click="newEntry">+ New Entry</button>
+      <!-- Past Entries List -->
+      <div class="entries-list">
+        <h2>Past Entries</h2>
+        <ul>
+          <li v-for="entry in entries" :key="entry._id">
+            <strong>{{ entry.title }}</strong> - {{ entry.category }} (Mood:
+            {{ entry.mood }})<br />
+            Created: {{ formatDate(entry.created) }} <br />
+            Edited: {{ formatDate(entry.edited) }}<br />
+            {{ entry.entry }}
+          </li>
+        </ul>
+      </div>
+
+      <button v-if="!showTextBox" class="new-entry-button" @click="newEntry">
+        + New Entry
+      </button>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref } from 'vue'
-import bgImage from '@/assets/journal-cover.jpg'
-import looseLeafImage from '@/assets/looseleaf.jpg'
+import { ref, onMounted } from "vue";
+import axios from "axios";
+import bgImage from "@/assets/journal-cover.jpg";
+import looseLeafImage from "@/assets/looseleaf.jpg";
 
-const name = ref('')
-const showWelcome = ref(false)
-const showJournal = ref(false)
+// UI State
+const name = ref("");
+const showWelcome = ref(false);
+const showJournal = ref(false);
+const showTextBox = ref(false);
+const entryStarted = ref(false);
 
-const showTextBox = ref(false)
-const entryStarted = ref(false)
-const journalEntry = ref('')
-const selectedMood = ref('')
-const selectedCategory = ref('')
+// Form Data
+const selectedMood = ref("");
+const selectedCategory = ref("");
+const journalEntry = ref("");
+const newTitle = ref("");
+const moodOptions = [
+  { label: "😊 Happy", value: 5 },
+  { label: "😢 Sad", value: 1 },
+  { label: "😡 Angry", value: 2 },
+  { label: "😴 Tired", value: 3 },
+  { label: "🤯 Stressed", value: 4 },
+];
 
-const savedEntries = ref({
-  Venting: [],
-  Life: [],
-  Travel: [],
-  Hobbies: [],
-  Finances: [],
-  Goals: [],
-})
+// Past Entries
+const entries = ref([]);
+
+// Fetch existing entries when page loads
+onMounted(async () => {
+  const res = await axios.get("http://localhost:5000/api/entries");
+  entries.value = res.data;
+});
+
+function formatDate(isoString) {
+  const options = {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  };
+  return new Date(isoString).toLocaleDateString(undefined, options);
+}
 
 function resetName() {
-  name.value = ''
-  showWelcome.value = false
+  name.value = "";
+  showWelcome.value = false;
 }
 
 function newEntry() {
-  showTextBox.value = true
-  entryStarted.value = false
-  selectedMood.value = ''
-  selectedCategory.value = ''
-  journalEntry.value = ''
+  showTextBox.value = true;
+  entryStarted.value = false;
+  selectedMood.value = "";
+  selectedCategory.value = "";
+  journalEntry.value = "";
+  newTitle.value = "";
 }
 
 function startEntry() {
   if (selectedMood.value && selectedCategory.value) {
-    entryStarted.value = true
+    entryStarted.value = true;
   } else {
-    alert('Please select both a mood and a category before writing!')
+    alert("Please select both a mood and a category before writing!");
   }
 }
 
-function saveEntry() {
-  if (journalEntry.value.trim() === '') {
-    alert('You cannot save an empty entry.')
-    return
+async function saveEntry() {
+  if (
+    !newTitle.value.trim() ||
+    !journalEntry.value.trim() ||
+    !selectedMood.value ||
+    !selectedCategory.value
+  ) {
+    alert("Please fill out all fields before saving.");
+    return;
   }
 
-  savedEntries.value[selectedCategory.value].push({
+  const newEntryObj = {
+    title: newTitle.value,
+    category: selectedCategory.value,
     mood: selectedMood.value,
-    text: journalEntry.value,
-    date: new Date().toLocaleString()
-  })
+    entry: journalEntry.value,
+  };
+  try {
+    const res = await axios.post(
+      "http://localhost:5000/api/entries",
+      newEntryObj
+    );
+    entries.value.unshift(res.data); // Add new entry at the top
 
-  alert(`Entry saved under "${selectedCategory.value}"! 🎉`)
+    alert(`Entry saved under "${selectedCategory.value}"! 🎉`);
+  } catch (error) {
+    console.error("Save failed:", error.response?.data || error.message);
+    alert(`Save failed: ${error.response?.data?.error || "Unknown error"}`);
+  }
 
-  // Reset for next entry
-  showTextBox.value = false
-  entryStarted.value = false
-  journalEntry.value = ''
-  selectedMood.value = ''
-  selectedCategory.value = ''
+  // Reset form
+  showTextBox.value = false;
+  entryStarted.value = false;
+  journalEntry.value = "";
+  selectedMood.value = "";
+  selectedCategory.value = "";
+  newTitle.value = "";
 }
 </script>
 
@@ -173,7 +256,7 @@ function saveEntry() {
   padding: 0.75rem 2rem;
   cursor: pointer;
   transition: all 0.3s ease;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
   margin: 0.5rem;
 }
 
@@ -210,7 +293,9 @@ function saveEntry() {
   display: flex;
   justify-content: center;
   align-items: center;
-  width: 100vw;
+  /* width: 100vw; */
+  width: 100%;
+  max-width: 1200px;
   height: 100vh;
   overflow: auto;
   padding: 1rem;
@@ -218,16 +303,19 @@ function saveEntry() {
 }
 
 .looseleaf-img {
-  width: 600px;
-  max-width: 90vw;
+  /* width: 600px; */
+  width: 100%;
+  /* max-width: 90vw; */
+  display: block;
   height: auto;
   object-fit: contain;
   border-radius: 12px;
-  box-shadow: 0 0 20px rgba(0,0,0,0.3);
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
 }
 
 /* New Styles */
-.selector-box, .entry-box {
+.selector-box,
+.entry-box {
   position: absolute;
   top: 120px;
   left: 50%;
@@ -250,7 +338,8 @@ function saveEntry() {
   border: 2px solid #fbc2eb;
 }
 
-.start-entry-button, .save-entry-button {
+.start-entry-button,
+.save-entry-button {
   margin-top: 1rem;
   background: linear-gradient(135deg, #ffe0f7, #fbc2eb);
   border: none;
@@ -261,10 +350,11 @@ function saveEntry() {
   padding: 0.75rem 2rem;
   cursor: pointer;
   transition: all 0.3s ease;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
 }
 
-.start-entry-button:hover, .save-entry-button:hover {
+.start-entry-button:hover,
+.save-entry-button:hover {
   transform: scale(1.05);
   background: linear-gradient(135deg, #fbc2eb, #ffe0f7);
 }
@@ -291,7 +381,7 @@ function saveEntry() {
   border-radius: 20px;
   background: linear-gradient(135deg, #ffe0f7, #fbc2eb);
   color: #333;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
   cursor: pointer;
   transition: 0.3s ease;
 }
@@ -300,5 +390,40 @@ function saveEntry() {
   transform: scale(1.05);
   background: linear-gradient(135deg, #fbc2eb, #ffe0f7);
 }
-</style>
+.entries-list {
+  margin-top: 2rem;
+  background: rgba(255, 255, 255, 0.95); /* more solid background */
+  border-radius: 12px;
+  padding: 1rem;
+  width: 80%;
+  max-width: 600px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.15);
+  color: #333; /* dark text */
+  font-size: 1rem;
+  position: absolute;
+  top: 20%;
+  left: 25%;
+  z-index: 5;
+}
 
+.entries-list h2 {
+  margin-bottom: 1rem;
+  color: #d63384; /* nice pop */
+  text-align: center;
+  font-weight: bold;
+}
+
+.entries-list ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.entries-list li {
+  margin-bottom: 1rem;
+  padding: 0.5rem;
+  border-bottom: 1px solid #ccc;
+  line-height: 1.5;
+  color: #222; /* darker text for better readability */
+}
+</style>
