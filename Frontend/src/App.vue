@@ -12,23 +12,24 @@
         placeholder="Enter your name"
         class="input-box"
       />
+      <!--
       <button class="welcome-button" @click="showWelcome = true">
         Welcome
       </button>
-      <p v-if="showWelcome" class="greeting">Welcome, {{ name }}!</p>
+      <p v-if="showWelcome" class="greeting">Welcome, {{ name }}!</p> -->
       <button class="welcome-button" @click="showJournal = true">
         Open Journal
       </button>
-      <button class="back-button" @click="resetName">← Reset Name</button>
+      <!-- <button class="back-button" @click="resetName">← Reset Name</button> -->
     </div>
 
     <!-- Journal Page -->
     <div class="journal-image" v-else>
-      <img
+      <!-- <img
         :src="looseLeafImage"
         alt="Loose Leaf Journal"
         class="looseleaf-img"
-      />
+      /> -->
 
       <!-- Mood and Category Selectors -->
       <div v-if="showTextBox && !entryStarted" class="selector-box">
@@ -78,16 +79,24 @@
 
       <!-- Past Entries List -->
       <div class="entries-list">
-        <h2>Past Entries</h2>
+        <h2>{{ name }}'s Past Entries</h2>
         <ul>
           <li v-for="entry in entries" :key="entry._id">
-            <strong>Title: {{ entry.title }}</strong
-            ><br />
-            Category: {{ entry.category }}<br />
-            Mood: {{ getMoodLabel(entry.mood) }}<br />
-            Created on {{ formatDate(entry.created) }} <br />
-            Last Edited on {{ formatDate(entry.edited) }}<br />
-            {{ entry.entry }}
+            <div @click="toggleEntry(entry._id)" style="cursor: pointer">
+              <strong>Title: {{ entry.title }}</strong
+              ><br />
+              Category: {{ entry.category }}<br />
+              Mood: {{ getMoodLabel(entry.mood) }}<br />
+              Created on {{ formatDate(entry.created) }} <br />
+              Last Edited on {{ formatDate(entry.edited) }}<br />
+            </div>
+            <!-- show entry if expanded-->
+            <div
+              v-if="expandedEntryId === entry._id"
+              style="margin-top: 0.5rem; padding-left: 1rem"
+            >
+              {{ entry.entry }}
+            </div>
           </li>
         </ul>
       </div>
@@ -111,6 +120,7 @@ const showWelcome = ref(false);
 const showJournal = ref(false);
 const showTextBox = ref(false);
 const entryStarted = ref(false);
+const expandedEntryId = ref(null);
 
 // Form Data
 const selectedMood = ref("");
@@ -148,6 +158,10 @@ function formatDate(isoString) {
 const getMoodLabel = (moodValue) => {
   const mood = moodOptions.find((option) => option.value === moodValue);
   return mood ? mood.label : moodValue;
+};
+
+const toggleEntry = (id) => {
+  expandedEntryId.value = expandedEntryId.value === id ? null : id;
 };
 
 function resetName() {
@@ -298,14 +312,18 @@ async function saveEntry() {
 
 .journal-image {
   display: flex;
-  justify-content: center;
+  flex-direction: column; /* important so content stacks vertically */
   align-items: center;
-  /* width: 100vw; */
   width: 100%;
   max-width: 1200px;
-  height: 100vh;
-  overflow: auto;
-  padding: 1rem;
+  min-height: 100vh; /* minimum full height */
+  overflow-y: auto;
+  padding: 2rem;
+  background-image: url("@/assets/looseleaf.jpg"); /* <-- set the background here */
+  background-repeat: repeat-y; /* <-- repeat vertically */
+  /* background-size: contain; or 'cover', depending on effect */
+  background-size: cover; /* or 'cover', depending on effect */
+  background-position: top center; /* keep it centered */
   position: relative;
 }
 
@@ -378,7 +396,8 @@ async function saveEntry() {
 }
 
 .new-entry-button {
-  position: absolute;
+  /* position: absolute; */
+  position: fixed;
   bottom: 2rem;
   right: 2rem;
   padding: 0.6rem 1.5rem;
@@ -408,7 +427,7 @@ async function saveEntry() {
   color: #333; /* dark text */
   font-size: 1rem;
   position: absolute;
-  top: 20%;
+  /* top: 20%; */
   left: 25%;
   z-index: 5;
 }
