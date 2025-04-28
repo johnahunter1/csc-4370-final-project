@@ -81,10 +81,12 @@
         <h2>Past Entries</h2>
         <ul>
           <li v-for="entry in entries" :key="entry._id">
-            <strong>{{ entry.title }}</strong> - {{ entry.category }} (Mood:
-            {{ entry.mood }})<br />
-            Created: {{ formatDate(entry.created) }} <br />
-            Edited: {{ formatDate(entry.edited) }}<br />
+            <strong>Title: {{ entry.title }}</strong
+            ><br />
+            Category: {{ entry.category }}<br />
+            Mood: {{ getMoodLabel(entry.mood) }}<br />
+            Created on {{ formatDate(entry.created) }} <br />
+            Last Edited on {{ formatDate(entry.edited) }}<br />
             {{ entry.entry }}
           </li>
         </ul>
@@ -142,6 +144,11 @@ function formatDate(isoString) {
   };
   return new Date(isoString).toLocaleDateString(undefined, options);
 }
+
+const getMoodLabel = (moodValue) => {
+  const mood = moodOptions.find((option) => option.value === moodValue);
+  return mood ? mood.label : moodValue;
+};
 
 function resetName() {
   name.value = "";
