@@ -1,154 +1,124 @@
 <template>
-  <div
-    id="app"
-    class="background-cover"
-    :style="{ backgroundImage: `url(${bgImage})` }"
-  >
+  <div id="app" class="background-cover" :style="{ backgroundImage: `url(${bgImage})` }">
     <!-- Welcome Page -->
     <div class="welcome-box" v-if="!showJournal">
-      <input
-        v-model="name"
-        type="text"
-        placeholder="Enter your name"
-        class="input-box"
-      />
-      <button class="welcome-button" @click="showWelcome = true">
-        Welcome
-      </button>
+      <input v-model="name" type="text" placeholder="Enter your name" class="input-box" />
+      <button class="welcome-button" @click="showWelcome = true">Welcome</button>
       <p v-if="showWelcome" class="greeting">Welcome, {{ name }}!</p>
-      <button class="welcome-button" @click="showJournal = true">
-        Open Journal
-      </button>
+      <button class="welcome-button" @click="showJournal = true">Open Journal</button>
       <button class="back-button" @click="resetName">← Reset Name</button>
     </div>
 
     <!-- Journal Page -->
     <div class="journal-image" v-else>
-      <img
-        :src="looseLeafImage"
-        alt="Loose Leaf Journal"
-        class="looseleaf-img"
-      />
+      <img :src="looseLeafImage" alt="Loose Leaf Journal" class="looseleaf-img" />
 
-      <div class="entry-area">
-        <input
-          v-model="newTitle"
-          type="text"
-          placeholder="Title"
-          class="entry-input"
-        />
-        <input
-          v-model="newCategory"
-          type="text"
-          placeholder="Category"
-          class="entry-input"
-        />
-        <input
-          v-model.number="newMood"
-          type="number"
-          min="1"
-          max="10"
-          placeholder="Mood (1-10)"
-          class="entry-input"
-        />
+      <!-- Mood and Category Selectors -->
+      <div v-if="showTextBox && !entryStarted" class="selector-box">
+        <h3>How are you feeling?</h3>
+        <select v-model="selectedMood" class="dropdown">
+          <option disabled value="">Select Mood</option>
+          <option>😊 Happy</option>
+          <option>😢 Sad</option>
+          <option>😡 Angry</option>
+          <option>😴 Tired</option>
+          <option>🤯 Stressed</option>
+        </select>
+
+        <h3>Choose a category:</h3>
+        <select v-model="selectedCategory" class="dropdown">
+          <option disabled value="">Select Category</option>
+          <option>Venting</option>
+          <option>Life</option>
+          <option>Travel</option>
+          <option>Hobbies</option>
+          <option>Finances</option>
+          <option>Goals</option>
+        </select>
+
+        <button class="start-entry-button" @click="startEntry">Start Writing</button>
+      </div>
+
+      <!-- Journal Textbox -->
+      <div v-else-if="entryStarted" class="entry-box">
         <textarea
-          v-model="newEntryText"
-          placeholder="Type your journal entry here..."
-          class="entry-textarea"
+          v-model="journalEntry"
+          placeholder="Start writing your journal entry here..."
+          class="journal-textbox"
         ></textarea>
         <button class="save-entry-button" @click="saveEntry">Save Entry</button>
       </div>
 
-      <div class="entries-list">
-        <h2>Past Entries</h2>
-        <ul>
-          <li v-for="entry in entries" :key="entry._id">
-            <strong>{{ entry.title }}</strong> - {{ entry.category }} (Mood:
-            {{ entry.mood }})<br />
-            Created: {{ formatDate(entry.created) }} <br />Edited:
-            {{ formatDate(entry.edited) }}<br />
-            {{ entry.entry }}
-          </li>
-        </ul>
-      </div>
-
-      <button class="new-entry-button" @click="newEntry">+ New Entry</button>
+      <button v-if="!showTextBox" class="new-entry-button" @click="newEntry">+ New Entry</button>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
-import axios from "axios";
-import bgImage from "@/assets/journal-cover.jpg";
-import looseLeafImage from "@/assets/looseleaf.jpg";
+import { ref } from 'vue'
+import bgImage from '@/assets/journal-cover.jpg'
+import looseLeafImage from '@/assets/looseleaf.jpg'
 
-const name = ref("");
-const showWelcome = ref(false);
-const showJournal = ref(false);
-const entries = ref([]);
-const newEntryText = ref("");
-const newMood = ref(5);
-const newCategory = ref("");
-const newTitle = ref("");
+const name = ref('')
+const showWelcome = ref(false)
+const showJournal = ref(false)
 
-onMounted(async () => {
-  const res = await axios.get("http://localhost:5000/api/entries");
-  entries.value = res.data;
-});
+const showTextBox = ref(false)
+const entryStarted = ref(false)
+const journalEntry = ref('')
+const selectedMood = ref('')
+const selectedCategory = ref('')
 
-function formatDate(isoString) {
-  const options = {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  };
-  return new Date(isoString).toLocaleDateString(undefined, options);
-}
+const savedEntries = ref({
+  Venting: [],
+  Life: [],
+  Travel: [],
+  Hobbies: [],
+  Finances: [],
+  Goals: [],
+})
 
 function resetName() {
-  name.value = "";
-  showWelcome.value = false;
+  name.value = ''
+  showWelcome.value = false
 }
 
 function newEntry() {
-  // alert(
-  //   "New journal entry started this is for text box later dont know how to save "
-  // );
-  newEntryText.value = "";
-  newMood.value = 5;
-  newCategory.value = "";
-  newTitle.value = "";
+  showTextBox.value = true
+  entryStarted.value = false
+  selectedMood.value = ''
+  selectedCategory.value = ''
+  journalEntry.value = ''
 }
 
-async function saveEntry() {
-  // if (!newEntryText.value.trim()) return;
-
-  // const res = await axios.post("http://localhost:5000/api/entries", {
-  //   content: newEntryText.value,
-  // });
-  // entries.value.push(res.data); // add new entry to list
-  // newEntryText.value = ""; // clear textarea
-  if (
-    !newTitle.value.trim() ||
-    !newCategory.value.trim() ||
-    !newEntryText.value.trim() ||
-    newMood.value < 1 ||
-    newMood.value > 10
-  ) {
-    alert("Please fill out all fields with valid data");
-    return;
+function startEntry() {
+  if (selectedMood.value && selectedCategory.value) {
+    entryStarted.value = true
+  } else {
+    alert('Please select both a mood and a category before writing!')
   }
-  const res = await axios.post("http://localhost:5000/api/entries", {
-    title: newTitle.value,
-    category: newCategory.value,
-    mood: newMood.value,
-    entry: newEntryText.value,
-  });
-  entries.value.unshift(res.data); // add new entry to top
-  newEntry(); // clear entry form
+}
+
+function saveEntry() {
+  if (journalEntry.value.trim() === '') {
+    alert('You cannot save an empty entry.')
+    return
+  }
+
+  savedEntries.value[selectedCategory.value].push({
+    mood: selectedMood.value,
+    text: journalEntry.value,
+    date: new Date().toLocaleString()
+  })
+
+  alert(`Entry saved under "${selectedCategory.value}"! 🎉`)
+
+  // Reset for next entry
+  showTextBox.value = false
+  entryStarted.value = false
+  journalEntry.value = ''
+  selectedMood.value = ''
+  selectedCategory.value = ''
 }
 </script>
 
@@ -203,7 +173,7 @@ async function saveEntry() {
   padding: 0.75rem 2rem;
   cursor: pointer;
   transition: all 0.3s ease;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.15);
   margin: 0.5rem;
 }
 
@@ -253,86 +223,61 @@ async function saveEntry() {
   height: auto;
   object-fit: contain;
   border-radius: 12px;
-  box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 0 20px rgba(0,0,0,0.3);
 }
 
-.entry-area {
-  margin-top: 1rem;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  width: 100%;
-}
-
-.entry-input {
+/* New Styles */
+.selector-box, .entry-box {
+  position: absolute;
+  top: 120px;
+  left: 50%;
+  transform: translateX(-50%);
   width: 80%;
-  max-width: 600px;
-  padding: 0.6rem;
-  margin: 0.5rem 0;
-  border-radius: 10px;
-  border: 2px solid #fbc2eb;
-  font-size: 1rem;
-}
-
-.entry-textarea {
-  width: 80%;
-  max-width: 600px;
-  height: 150px;
-  padding: 1rem;
+  background: rgba(255, 255, 255, 0.9);
+  padding: 1.5rem;
   border-radius: 12px;
-  border: 2px solid #fbc2eb;
-  margin-bottom: 1rem;
-  font-size: 1rem;
-  resize: vertical;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  text-align: center;
+  z-index: 10;
 }
 
-.save-entry-button {
-  background: linear-gradient(135deg, #fddde6, #fbc2eb);
+.dropdown {
+  width: 80%;
+  padding: 0.5rem;
+  margin: 1rem 0;
+  font-size: 1rem;
+  border-radius: 8px;
+  border: 2px solid #fbc2eb;
+}
+
+.start-entry-button, .save-entry-button {
+  margin-top: 1rem;
+  background: linear-gradient(135deg, #ffe0f7, #fbc2eb);
   border: none;
   border-radius: 20px;
-  padding: 0.6rem 1.5rem;
-  font-weight: bold;
   color: #333;
-  cursor: pointer;
-  transition: 0.3s ease;
-}
-
-.save-entry-button:hover {
-  transform: scale(1.05);
-  background: linear-gradient(135deg, #fbc2eb, #fddde6);
-}
-
-.entries-list {
-  margin-top: 2rem;
-  background: rgba(255, 255, 255, 0.95); /* more solid background */
-  border-radius: 12px;
-  padding: 1rem;
-  width: 80%;
-  max-width: 600px;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.15);
-  color: #333; /* dark text */
   font-size: 1rem;
-}
-
-.entries-list h2 {
-  margin-bottom: 1rem;
-  color: #d63384; /* nice pop */
-  text-align: center;
   font-weight: bold;
+  padding: 0.75rem 2rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.15);
 }
 
-.entries-list ul {
-  list-style: none;
-  padding: 0;
-  margin: 0;
+.start-entry-button:hover, .save-entry-button:hover {
+  transform: scale(1.05);
+  background: linear-gradient(135deg, #fbc2eb, #ffe0f7);
 }
 
-.entries-list li {
-  margin-bottom: 1rem;
-  padding: 0.5rem;
-  border-bottom: 1px solid #ccc;
-  line-height: 1.5;
-  color: #222; /* darker text for better readability */
+.journal-textbox {
+  width: 100%;
+  height: 300px;
+  padding: 1rem;
+  font-size: 1rem;
+  border-radius: 12px;
+  border: 2px solid #fbc2eb;
+  resize: vertical;
+  margin-top: 1rem;
 }
 
 .new-entry-button {
@@ -346,7 +291,7 @@ async function saveEntry() {
   border-radius: 20px;
   background: linear-gradient(135deg, #ffe0f7, #fbc2eb);
   color: #333;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.15);
   cursor: pointer;
   transition: 0.3s ease;
 }
@@ -356,3 +301,4 @@ async function saveEntry() {
   background: linear-gradient(135deg, #fbc2eb, #ffe0f7);
 }
 </style>
+
