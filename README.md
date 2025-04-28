@@ -1,14 +1,13 @@
-# csc-4370-final-project
+# CSC4370 Final Project - Interactive Journal
 
-## Interactive Journal
-
+<!--
 ### Recommended IDE Setup
 
 [VSCode](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
 
 ### Customize Vite Configuration
 
-See [Vite Configuration Reference](https://vite.dev/config/).
+See [Vite Configuration Reference](https://vite.dev/config/). -->
 
 ## Project Setup
 
@@ -19,26 +18,26 @@ cd ../Backend
 npm install
 ```
 
-### Install and Start MongoDB
+## Install and Start MongoDB
 
 [MongoDB Installation Docs](https://www.mongodb.com/docs/manual/installation/)
 
-### Compile and Hot-Reload Frontend for Development
+## Compile and Hot-Reload Frontend for Development
 
 ```sh
 cd Frontend
 npm run dev
 ```
 
-### Run Backend Development Server (In Separate Shell)
+## Run Backend Development Server (In Separate Shell)
 
 ```sh
 cd Backend
 node server.js
 ```
 
-### Compile and Minify for Production
+<!-- ### Compile and Minify for Production
 
 ```sh
 npm run build
-```
+``` -->
