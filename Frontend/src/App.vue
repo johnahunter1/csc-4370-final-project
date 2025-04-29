@@ -27,6 +27,7 @@
         <h3>Choose a category:</h3>
         <select v-model="selectedCategory" class="dropdown">
           <option disabled value="">Select Category</option>
+          <option>School</option>
           <option>Venting</option>
           <option>Life</option>
           <option>Travel</option>
@@ -76,12 +77,16 @@
               Last Edited on {{ formatDate(entry.edited) }}<br />
             </div>
             <!-- show entry if expanded-->
-            <div
+            <p
               v-if="expandedEntryId === entry._id"
-              style="margin-top: 0.5rem; padding-left: 1rem"
+              style="
+                margin-top: 0.5rem;
+                padding-left: 1rem;
+                word-wrap: break-word;
+              "
             >
               {{ entry.entry }}
-            </div>
+            </p>
           </li>
         </ul>
       </div>
@@ -304,6 +309,11 @@ async function saveEntry() {
   right: 20%;
   top: 170%;
 }
+
+/* .display-entry { */
+/* text-wrap: balance;
+  max-width: 600px; */
+/* } */
 
 .welcome-button:hover {
   transform: scale(1.05);
