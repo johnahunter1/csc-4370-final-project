@@ -101,8 +101,6 @@
 <script setup>
 import { ref, onMounted, computed } from "vue";
 import axios from "axios";
-//import bgImage from "@/assets/journal-cover.jpg";
-//import looseLeafImage from "@/assets/looseleaf.jpg";
 
 // UI State
 const name = ref("");
@@ -111,7 +109,6 @@ const showJournal = ref(false);
 const showTextBox = ref(false);
 const entryStarted = ref(false);
 const expandedEntryId = ref(null);
-// const showStatsBox = ref(false);
 const statsOpen = ref(false);
 const averageMood = ref(0);
 
@@ -255,13 +252,10 @@ async function saveEntry() {
   top: 0;
   left: 0;
   width: 100vw;
-  /* min-width: 50%; */
   height: 100vh;
-  /* background-position: center; */
   background-repeat: no-repeat;
   background-image: url("@/assets/journal-cover.png"); /* <-- set the background here */
   background-size: contain; /*or 'cover', depending on effect*/
-  /* background-size: cover; or 'cover', depending on effect */
   background-position: top center; /* keep it centered */
   display: flex;
   justify-content: center;
@@ -280,16 +274,11 @@ async function saveEntry() {
 .input-box {
   padding: 0.5rem 1.5rem;
   font-size: 1rem;
-  /* border: 2px solid #f54291; */
   background-color: transparent;
   border-radius: 8px;
   margin-bottom: 1rem;
   width: 200px;
   position: relative;
-  /* top: 32.4%; */
-  /* top: 0px; */
-  /* top: 20px; */
-  /* right: 30%; */
   left: 53%;
 }
 
@@ -309,11 +298,6 @@ async function saveEntry() {
   right: 20%;
   top: 170%;
 }
-
-/* .display-entry { */
-/* text-wrap: balance;
-  max-width: 600px; */
-/* } */
 
 .welcome-button:hover {
   transform: scale(1.05);
@@ -353,20 +337,15 @@ async function saveEntry() {
   min-height: 100vh; /*minimum full height*/
   min-width: 40%;
   overflow-y: auto;
-  /* padding: 2rem; */
   background-image: url("@/assets/loose-leaf.png"); /* <-- set the background here */
   background-repeat: repeat-y; /* <-- repeat vertically */
-  /* background-size: contain; or 'cover', depending on effect */
   background-size: cover; /* or 'cover', depending on effect */
   background-position: top center; /* keep it centered */
   position: relative;
-  /* top: -20px; */
 }
 
 .looseleaf-img {
-  /* width: 600px; */
   width: 100%;
-  /* max-width: 90vw; */
   display: block;
   height: auto;
   object-fit: contain;
@@ -456,12 +435,6 @@ async function saveEntry() {
 
 .new-entry-button {
   position: absolute;
-  /* position: fixed; */
-  /* position: sticky; */
-  /* position: relative; */
-  /* position: static; */
-  /* bottom: 2rem; */
-  /* right: 2rem; */
   bottom: 5%;
   right: 5%;
   padding: 0.6rem 1.5rem;
@@ -478,12 +451,6 @@ async function saveEntry() {
 
 .stats-button {
   position: absolute;
-  /* position: fixed; */
-  /* position: sticky; */
-  /* position: relative; */
-  /* position: static; */
-  /* bottom: 2rem; */
-  /* right: 2rem; */
   bottom: 10%;
   right: 5.4%;
   padding: 0.6rem 1.5rem;
@@ -500,12 +467,6 @@ async function saveEntry() {
 
 .home-button {
   position: absolute;
-  /* position: fixed; */
-  /* position: sticky; */
-  /* position: relative; */
-  /* position: static; */
-  /* bottom: 2rem; */
-  /* right: 2rem; */
   bottom: 15%;
   right: 6%;
   padding: 0.6rem 1.5rem;
@@ -524,6 +485,7 @@ async function saveEntry() {
   transform: scale(1.05);
   background: linear-gradient(135deg, #fbc2eb, #ffe0f7);
 }
+
 .entries-list {
   margin-top: 2rem;
   background: rgba(255, 255, 255, 0.95); /* more solid background */
@@ -535,7 +497,6 @@ async function saveEntry() {
   color: #333; /* dark text */
   font-size: 1rem;
   position: absolute;
-  /* top: 20%; */
   left: 25%;
   z-index: 5;
 }
