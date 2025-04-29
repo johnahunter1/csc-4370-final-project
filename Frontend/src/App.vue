@@ -1,38 +1,17 @@
 <template>
-  <div
-    id="app"
-    class="background-cover"
-    :style="{ backgroundImage: `url(${bgImage})` }"
-  >
+  <div id="app" class="background-cover">
     <!-- Welcome Page -->
     <div class="welcome-box" v-if="!showJournal">
-      <input
-        v-model="name"
-        type="text"
-        placeholder="Enter your name"
-        class="input-box"
-      />
-      <!--
-      <button class="welcome-button" @click="showWelcome = true">
-        Welcome
-      </button>
-      <p v-if="showWelcome" class="greeting">Welcome, {{ name }}!</p> -->
+      <input v-model="name" type="text" placeholder="....." class="input-box" />
       <button class="welcome-button" @click="showJournal = true">
         Open Journal
       </button>
-      <!-- <button class="back-button" @click="resetName">← Reset Name</button> -->
     </div>
 
     <!-- Journal Page -->
     <div class="journal-image" v-else>
-      <!-- <img
-        :src="looseLeafImage"
-        alt="Loose Leaf Journal"
-        class="looseleaf-img"
-      /> -->
-
       <!-- Mood and Category Selectors -->
-      <div v-if="showTextBox && !entryStarted" class="selector-box">
+      <div v-if="showTextBox && !entryStarted" class="options-container">
         <h3>How are you feeling?</h3>
         <select v-model="selectedMood" class="dropdown">
           <option disabled value="">Select a mood</option>
@@ -55,7 +34,7 @@
           <option>Finances</option>
           <option>Goals</option>
         </select>
-
+        <br />
         <button class="start-entry-button" @click="startEntry">
           Start Writing
         </button>
@@ -77,8 +56,14 @@
         <button class="save-entry-button" @click="saveEntry">Save Entry</button>
       </div>
 
+      <div v-if="statsOpen" class="stats-box">
+        <h2>{{ name }}'s Monthly Statistics:</h2>
+        <h3>Entries Written: {{ editedLastMonth }}</h3>
+        <h3>Average Mood: {{ averageMood }}</h3>
+      </div>
+
       <!-- Past Entries List -->
-      <div class="entries-list">
+      <div v-if="!statsOpen && !showTextBox" class="entries-list">
         <h2>{{ name }}'s Past Entries</h2>
         <ul>
           <li v-for="entry in entries" :key="entry._id">
@@ -101,18 +86,18 @@
         </ul>
       </div>
 
-      <button v-if="!showTextBox" class="new-entry-button" @click="newEntry">
-        + New Entry
-      </button>
+      <button class="new-entry-button" @click="newEntry">+ New Entry</button>
+      <button class="stats-button" @click="showStats">Show Stats</button>
+      <button class="home-button" @click="goHome">Go Home</button>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, computed } from "vue";
 import axios from "axios";
-import bgImage from "@/assets/journal-cover.jpg";
-import looseLeafImage from "@/assets/looseleaf.jpg";
+//import bgImage from "@/assets/journal-cover.jpg";
+//import looseLeafImage from "@/assets/looseleaf.jpg";
 
 // UI State
 const name = ref("");
@@ -121,18 +106,22 @@ const showJournal = ref(false);
 const showTextBox = ref(false);
 const entryStarted = ref(false);
 const expandedEntryId = ref(null);
+// const showStatsBox = ref(false);
+const statsOpen = ref(false);
+const averageMood = ref(0);
 
 // Form Data
 const selectedMood = ref("");
 const selectedCategory = ref("");
 const journalEntry = ref("");
 const newTitle = ref("");
+const numEntries = ref(0);
 const moodOptions = [
-  { label: "😊 Happy", value: 5 },
-  { label: "😢 Sad", value: 1 },
-  { label: "😡 Angry", value: 2 },
-  { label: "😴 Tired", value: 3 },
-  { label: "🤯 Stressed", value: 4 },
+  { label: "😊 5", value: 5 },
+  { label: "😢 1", value: 1 },
+  { label: "😡 2", value: 2 },
+  { label: "😴 3", value: 3 },
+  { label: "🤯 4", value: 4 },
 ];
 
 // Past Entries
@@ -142,6 +131,21 @@ const entries = ref([]);
 onMounted(async () => {
   const res = await axios.get("http://localhost:5000/api/entries");
   entries.value = res.data;
+  for (let i = 0; i < entries.value.length; i++) {
+    numEntries.value += 1;
+    averageMood.value += entries.value[i].mood;
+  }
+  averageMood.value /= entries.value.length;
+  averageMood.value = Math.round(averageMood.value);
+  averageMood.value = getMoodLabel(averageMood.value);
+});
+
+const editedLastMonth = computed(() => {
+  const oneMonthAgo = new Date();
+  oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
+
+  return entries.value.filter((entry) => new Date(entry.edited) > oneMonthAgo)
+    .length;
 });
 
 function formatDate(isoString) {
@@ -164,18 +168,23 @@ const toggleEntry = (id) => {
   expandedEntryId.value = expandedEntryId.value === id ? null : id;
 };
 
-function resetName() {
-  name.value = "";
-  showWelcome.value = false;
-}
-
 function newEntry() {
-  showTextBox.value = true;
+  showTextBox.value = !showTextBox.value;
   entryStarted.value = false;
   selectedMood.value = "";
   selectedCategory.value = "";
   journalEntry.value = "";
   newTitle.value = "";
+  statsOpen.value = false;
+}
+
+function showStats() {
+  statsOpen.value = !statsOpen.value;
+  showTextBox.value = false;
+}
+
+function goHome() {
+  showJournal.value = false;
 }
 
 function startEntry() {
@@ -241,10 +250,14 @@ async function saveEntry() {
   top: 0;
   left: 0;
   width: 100vw;
+  /* min-width: 50%; */
   height: 100vh;
-  background-size: cover;
-  background-position: center;
+  /* background-position: center; */
   background-repeat: no-repeat;
+  background-image: url("@/assets/journal-cover.png"); /* <-- set the background here */
+  background-size: contain; /*or 'cover', depending on effect*/
+  /* background-size: cover; or 'cover', depending on effect */
+  background-position: top center; /* keep it centered */
   display: flex;
   justify-content: center;
   align-items: center;
@@ -255,23 +268,31 @@ async function saveEntry() {
   padding: 2rem;
   border-radius: 12px;
   text-align: center;
-  margin-top: -300px;
+  margin-top: -355px;
+  position: relative;
 }
 
 .input-box {
-  padding: 0.5rem 1rem;
+  padding: 0.5rem 1.5rem;
   font-size: 1rem;
-  border: 2px solid #f54291;
+  /* border: 2px solid #f54291; */
+  background-color: transparent;
   border-radius: 8px;
   margin-bottom: 1rem;
-  width: 100%;
+  width: 200px;
+  position: relative;
+  /* top: 32.4%; */
+  /* top: 0px; */
+  /* top: 20px; */
+  /* right: 30%; */
+  left: 53%;
 }
 
 .welcome-button {
   background: linear-gradient(135deg, #fddde6, #fbc2eb);
   border: none;
   border-radius: 20px;
-  color: #fff;
+  color: #000000;
   font-size: 1rem;
   font-weight: bold;
   padding: 0.75rem 2rem;
@@ -279,6 +300,9 @@ async function saveEntry() {
   transition: all 0.3s ease;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
   margin: 0.5rem;
+  position: relative;
+  right: 20%;
+  top: 170%;
 }
 
 .welcome-button:hover {
@@ -316,15 +340,17 @@ async function saveEntry() {
   align-items: center;
   width: 100%;
   max-width: 1200px;
-  min-height: 100vh; /* minimum full height */
+  min-height: 100vh; /*minimum full height*/
+  min-width: 40%;
   overflow-y: auto;
-  padding: 2rem;
-  background-image: url("@/assets/looseleaf.jpg"); /* <-- set the background here */
+  /* padding: 2rem; */
+  background-image: url("@/assets/loose-leaf.png"); /* <-- set the background here */
   background-repeat: repeat-y; /* <-- repeat vertically */
   /* background-size: contain; or 'cover', depending on effect */
   background-size: cover; /* or 'cover', depending on effect */
   background-position: top center; /* keep it centered */
   position: relative;
+  /* top: -20px; */
 }
 
 .looseleaf-img {
@@ -339,7 +365,7 @@ async function saveEntry() {
 }
 
 /* New Styles */
-.selector-box,
+.options-container,
 .entry-box {
   position: absolute;
   top: 120px;
@@ -352,6 +378,29 @@ async function saveEntry() {
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
   text-align: center;
   z-index: 10;
+}
+
+.options-container {
+  color: #000;
+}
+
+.stats-box {
+  position: absolute;
+  top: 120px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 30%;
+  background: rgba(255, 255, 255, 0.9);
+  padding: 1.5rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  text-align: center;
+  color: #000;
+  z-index: 10;
+}
+
+.stats-box h2 {
+  color: #d63384;
 }
 
 .dropdown {
@@ -396,10 +445,59 @@ async function saveEntry() {
 }
 
 .new-entry-button {
-  /* position: absolute; */
-  position: fixed;
-  bottom: 2rem;
-  right: 2rem;
+  position: absolute;
+  /* position: fixed; */
+  /* position: sticky; */
+  /* position: relative; */
+  /* position: static; */
+  /* bottom: 2rem; */
+  /* right: 2rem; */
+  bottom: 5%;
+  right: 5%;
+  padding: 0.6rem 1.5rem;
+  font-size: 1rem;
+  font-weight: bold;
+  border: none;
+  border-radius: 20px;
+  background: linear-gradient(135deg, #ffe0f7, #fbc2eb);
+  color: #333;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+  cursor: pointer;
+  transition: 0.3s ease;
+}
+
+.stats-button {
+  position: absolute;
+  /* position: fixed; */
+  /* position: sticky; */
+  /* position: relative; */
+  /* position: static; */
+  /* bottom: 2rem; */
+  /* right: 2rem; */
+  bottom: 10%;
+  right: 5.4%;
+  padding: 0.6rem 1.5rem;
+  font-size: 1rem;
+  font-weight: bold;
+  border: none;
+  border-radius: 20px;
+  background: linear-gradient(135deg, #ffe0f7, #fbc2eb);
+  color: #333;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+  cursor: pointer;
+  transition: 0.3s ease;
+}
+
+.home-button {
+  position: absolute;
+  /* position: fixed; */
+  /* position: sticky; */
+  /* position: relative; */
+  /* position: static; */
+  /* bottom: 2rem; */
+  /* right: 2rem; */
+  bottom: 15%;
+  right: 6%;
   padding: 0.6rem 1.5rem;
   font-size: 1rem;
   font-weight: bold;
