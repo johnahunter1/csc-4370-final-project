@@ -10,9 +10,6 @@ router.get("/", async (req, res) => {
 
 // create a new entry
 router.post("/", async (req, res) => {
-  // const newEntry = new Entry(req.body);
-  // await newEntry.save();
-  // res.status(201).json(newEntry);
   const { title, category, mood, entry } = req.body;
   try {
     const newEntry = new Entry({
